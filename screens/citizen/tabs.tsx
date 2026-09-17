@@ -15,6 +15,7 @@ import ProfileScreen from './profile';
 import PersonalInformationScreen from './personal-information';
 import MapScreen from './map';
 import ReportsScreen from './reports';
+import ReportIssueScreen from './report-issue';
 
 type Props = {
   firstName: string;
@@ -24,6 +25,7 @@ type Props = {
 
 const Tab = createBottomTabNavigator();
 const ProfileStack = createNativeStackNavigator();
+const HomeStack = createNativeStackNavigator();
 
 function ProfileStackScreen({
   firstName,
@@ -54,6 +56,34 @@ function ProfileStackScreen({
         component={PersonalInformationScreen}
       />
     </ProfileStack.Navigator>
+  );
+}
+
+function HomeStackScreen({ firstName }: { firstName: string }) {
+  return (
+    <HomeStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <HomeStack.Screen name="HomeMain">
+        {({ navigation }) => (
+          <HomeScreen
+            firstName={firstName}
+            onReportIssue={() => navigation.navigate('ReportIssue')}
+          />
+        )}
+      </HomeStack.Screen>
+
+      <HomeStack.Screen
+        name="ReportIssue"
+        component={ReportIssueScreen}
+        options={{
+          headerShown: true,
+          title: 'Report an Issue',
+        }}
+      />
+    </HomeStack.Navigator>
   );
 }
 
@@ -93,14 +123,7 @@ export default function CitizenTabs({
             tabBarLabel: 'Home',
           }}
         >
-          {() => (
-            <HomeScreen
-              firstName={firstName}
-              onReportIssue={() => {
-                console.log('Report Issue pressed');
-              }}
-            />
-          )}
+          {() => <HomeStackScreen firstName={firstName} />}
         </Tab.Screen>
 
         {/* MAP TAB */}
