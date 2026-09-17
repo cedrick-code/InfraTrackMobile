@@ -8,10 +8,13 @@ import {
 import {
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from './home';
 import ProfileScreen from './profile';
 import PersonalInformationScreen from './personal-information';
+import MapScreen from './map';
+import ReportsScreen from './reports';
 
 type Props = {
   firstName: string;
@@ -62,9 +65,24 @@ export default function CitizenTabs({
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
-        }}
+          tabBarIcon: ({ color, size }) => {
+            let iconName: keyof typeof Ionicons.glyphMap = 'home';
+
+            if (route.name === 'Home') {
+              iconName = 'home';
+            } else if (route.name === 'Map') {
+              iconName = 'map';
+            } else if (route.name === 'Reports') {
+              iconName = 'document-text';
+            } else if (route.name === 'Profile') {
+              iconName = 'person';
+            }
+
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+        })}
       >
 
         {/* HOME TAB */}
@@ -85,6 +103,25 @@ export default function CitizenTabs({
           )}
         </Tab.Screen>
 
+        {/* MAP TAB */}
+        <Tab.Screen
+          name="Map"
+          component={MapScreen}
+          options={{
+            title: 'Map',
+            tabBarLabel: 'Map',
+          }}
+        />
+
+        {/* REPORTS TAB */}
+        <Tab.Screen
+          name="Reports"
+          component={ReportsScreen}
+          options={{
+            title: 'Reports',
+            tabBarLabel: 'Reports',
+          }}
+        />
 
         {/* PROFILE TAB */}
         <Tab.Screen
