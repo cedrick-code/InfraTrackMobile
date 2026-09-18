@@ -10,6 +10,7 @@ import SplashScreen from './screens/citizen/splash';
 import LoginScreen from './screens/citizen/login';
 import RegisterScreen from './screens/citizen/register';
 import CitizenTabs from './screens/citizen/tabs';
+import FieldEngineerTabs from './screens/field-engineer/tabs';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -17,22 +18,21 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [role, setRole] = useState('');
   const [isCheckingLogin, setIsCheckingLogin] = useState(true);
 
-  // Check if user was already logged in
   useEffect(() => {
     const checkLogin = async () => {
       try {
         const token = await AsyncStorage.getItem('auth_token');
-        const savedFirstName =
-          await AsyncStorage.getItem('first_name');
-        
-        const savedLastName =
-          await AsyncStorage.getItem('last_name');
+        const savedFirstName = await AsyncStorage.getItem('first_name');
+        const savedLastName = await AsyncStorage.getItem('last_name');
+        const savedRole = await AsyncStorage.getItem('role');
 
-        if (token && savedFirstName && savedLastName) {
+        if (token && savedFirstName && savedLastName && savedRole) {
           setFirstName(savedFirstName);
           setLastName(savedLastName);
+          setRole(savedRole);
           setIsLoggedIn(true);
         }
       } catch (error) {
@@ -45,16 +45,10 @@ export default function App() {
     checkLogin();
   }, []);
 
-  // Show splash screen first
   if (showSplash) {
-    return (
-      <SplashScreen
-        onFinish={() => setShowSplash(false)}
-      />
-    );
+    return <SplashScreen onFinish={() => setShowSplash(false)} />;
   }
 
-  // Wait while checking AsyncStorage
   if (isCheckingLogin) {
     return (
       <View style={styles.loadingContainer}>
@@ -63,41 +57,50 @@ export default function App() {
     );
   }
 
-  // User is logged in
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('auth_token');
+    await AsyncStorage.removeItem('first_name');
+    await AsyncStorage.removeItem('last_name');
+    await AsyncStorage.removeItem('role');
+
+    setIsLoggedIn(false);
+    setFirstName('');
+    setLastName('');
+    setRole('');
+  };
+
   if (isLoggedIn) {
+    if (role === 'field_engineer') {
+      return (
+        <FieldEngineerTabs
+          firstName={firstName}
+          lastName={lastName}
+          onLogout={handleLogout}
+        />
+      );
+    }
+
+    // default: citizen
     return (
       <CitizenTabs
         firstName={firstName}
         lastName={lastName}
-        onLogout={async () => {
-          await AsyncStorage.removeItem('auth_token');
-          await AsyncStorage.removeItem('first_name');
-          await AsyncStorage.removeItem('last_name');
-
-          setIsLoggedIn(false);
-          setFirstName('');
-          setLastName('');
-        }}
+        onLogout={handleLogout}
       />
     );
   }
 
-  // Register screen
   if (showRegister) {
-    return (
-      <RegisterScreen
-        onLogin={() => setShowRegister(false)}
-      />
-    );
+    return <RegisterScreen onLogin={() => setShowRegister(false)} />;
   }
 
-  // Login screen
   return (
     <LoginScreen
       onRegister={() => setShowRegister(true)}
-      onLogin={(userFirstName, userLastName) => {
+      onLogin={(userFirstName, userLastName, userRole) => {
         setFirstName(userFirstName);
         setLastName(userLastName);
+        setRole(userRole);
         setIsLoggedIn(true);
       }}
     />

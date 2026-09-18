@@ -14,7 +14,7 @@ import { API_URL } from '../../services/api';
 
 type Props = {
   onRegister: () => void;
-  onLogin: (firstName: string, lastName: string) => void;
+  onLogin: (firstName: string, lastName: string, role: string) => void;
 };
 
 export default function LoginScreen({
@@ -68,10 +68,12 @@ export default function LoginScreen({
       await AsyncStorage.setItem('auth_token', data.token);
       await AsyncStorage.setItem('first_name', data.user.first_name);
       await AsyncStorage.setItem('last_name', data.user.last_name);
+      await AsyncStorage.setItem('role', data.user.role);
 
       onLogin(
         data.user.first_name,
-        data.user.last_name
+        data.user.last_name,
+        data.user.role
       );
 
     } catch (error) {

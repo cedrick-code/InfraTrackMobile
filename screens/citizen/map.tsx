@@ -86,7 +86,17 @@ export default function MapScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    container: { 
+        flex: 1 
+    },
+
+    map: { 
+        flex: 1 
+    },
+
+    centered: { 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+    },
 });
