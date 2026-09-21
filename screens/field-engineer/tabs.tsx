@@ -7,6 +7,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 import ValidatedReportsScreen from './validated_reports';
 import InspectionFormScreen from './inspection_form';
+import WorkOrdersScreen from './work-orders';
+import WorkOrderDetailScreen from './work-order-detail';
 
 type Props = {
   firstName: string;
@@ -27,6 +29,21 @@ function InspectStackScreen() {
         options={{ headerShown: true, title: 'Submit Inspection' }}
       />
     </InspectStack.Navigator>
+  );
+}
+
+const WorkOrderStack = createNativeStackNavigator();
+
+function WorkOrderStackScreen() {
+  return (
+    <WorkOrderStack.Navigator screenOptions={{ headerShown: false }}>
+      <WorkOrderStack.Screen name="WorkOrdersList" component={WorkOrdersScreen} />
+      <WorkOrderStack.Screen
+        name="WorkOrderDetail"
+        component={WorkOrderDetailScreen}
+        options={{ headerShown: true, title: 'Work Order Details' }}
+      />
+    </WorkOrderStack.Navigator>
   );
 }
 
@@ -51,12 +68,14 @@ export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Pro
           tabBarIcon: ({ color, size }) => {
             let iconName: keyof typeof Ionicons.glyphMap = 'clipboard';
             if (route.name === 'Inspections') iconName = 'clipboard';
+            if (route.name === 'WorkOrders') iconName = 'construct';
             if (route.name === 'Profile') iconName = 'person';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
         })}
       >
         <Tab.Screen name="Inspections" component={InspectStackScreen} />
+        <Tab.Screen name="WorkOrders" component={WorkOrderStackScreen} options={{ title: 'Work Orders' }} />
         <Tab.Screen name="Profile">
           {() => <ProfileTab firstName={firstName} lastName={lastName} onLogout={onLogout} />}
         </Tab.Screen>
