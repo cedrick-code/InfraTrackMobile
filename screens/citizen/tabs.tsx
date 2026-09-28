@@ -17,6 +17,7 @@ import MapScreen from './map';
 import ReportsScreen from './reports';
 import ReportIssueScreen from './report-issue';
 import ReportDetailScreen from './report-detail';
+import NotificationsScreen from '../shared/notifications';
 
 type Props = {
   firstName: string;
@@ -82,6 +83,7 @@ function HomeStackScreen({ firstName }: { firstName: string }) {
             onViewAllReports={() =>
               navigation.navigate('Reports', { screen: 'ReportsList' })
             }
+            onOpenNotifications={() => navigation.navigate('Notifications')}
           />
         )}
       </HomeStack.Screen>
@@ -94,6 +96,28 @@ function HomeStackScreen({ firstName }: { firstName: string }) {
           title: 'Report an Issue',
         }}
       />
+
+      <HomeStack.Screen
+        name="Notifications"
+        options={{
+          headerShown: true,
+          title: 'Notifications',
+        }}
+      >
+        {({ navigation }) => (
+          <NotificationsScreen
+            showTitle={false}
+            onOpenNotification={(notification) => {
+              if (notification.report) {
+                navigation.navigate('Reports', {
+                  screen: 'ReportDetail',
+                  params: { reportId: notification.report },
+                });
+              }
+            }}
+          />
+        )}
+      </HomeStack.Screen>
     </HomeStack.Navigator>
   );
 }

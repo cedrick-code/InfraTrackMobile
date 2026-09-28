@@ -10,11 +10,13 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../services/api';
+import { useUnreadCount } from '../../services/notifications';
 
 type Props = {
   onReportIssue: () => void;
   onViewReport: (reportId: number) => void;
   onViewAllReports: () => void;
+  onOpenNotifications: () => void;
   firstName: string;
 };
 
@@ -31,10 +33,12 @@ export default function HomeScreen({
   onReportIssue,
   onViewReport,
   onViewAllReports,
+  onOpenNotifications,
   firstName,
 }: Props) {
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
+  const unreadCount = useUnreadCount();
 
   const fetchRecentReports = async () => {
     try {
@@ -84,10 +88,21 @@ export default function HomeScreen({
           </Text>
         </View>
 
-        <View style={styles.profileCircle}>
-          <Text style={styles.profileText}>
-            {firstName.charAt(0).toUpperCase()}
-          </Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.bellButton} onPress={onOpenNotifications}>
+            <Text style={styles.bellIcon}>🔔</Text>
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.profileCircle}>
+            <Text style={styles.profileText}>
+              {firstName.charAt(0).toUpperCase()}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -125,11 +140,13 @@ export default function HomeScreen({
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.quickCard}>
+        <TouchableOpacity style={styles.quickCard} onPress={onOpenNotifications}>
           <Text style={styles.quickIcon}>🔔</Text>
           <Text style={styles.quickTitle}>Notifications</Text>
           <Text style={styles.quickDescription}>
-            Check report updates
+            {unreadCount > 0
+              ? `${unreadCount} new update${unreadCount > 1 ? 's' : ''}`
+              : 'Check report updates'}
           </Text>
         </TouchableOpacity>
 
@@ -384,5 +401,45 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
     color: '#888888',
+  },
+
+    headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  bellButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  bellIcon: {
+    fontSize: 18,
+  },
+
+  unreadBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#d32f2f',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
   },
 });

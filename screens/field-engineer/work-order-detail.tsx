@@ -100,6 +100,15 @@ export default function WorkOrderDetailScreen({ route, navigation }: any) {
       <Text style={styles.detailsText}>{workOrder.work_order_details}</Text>
       <Text style={styles.dateText}>Issued: {new Date(workOrder.date_issued).toLocaleDateString()}</Text>
 
+            {workOrder.update_requested && (
+        <View style={styles.requestBanner}>
+          <Text style={styles.requestBannerTitle}>⚠️ District Engineer requested an update</Text>
+          {workOrder.update_request_message ? (
+            <Text style={styles.requestBannerMessage}>"{workOrder.update_request_message}"</Text>
+          ) : null}
+        </View>
+      )}
+
       {workOrder.repair_updates && workOrder.repair_updates.length > 0 && (
         <>
           <Text style={styles.sectionTitle}>Update History</Text>
@@ -215,4 +224,12 @@ const styles = StyleSheet.create({
   photoPreview: { width: 70, height: 70, borderRadius: 8 },
   submitButton: { backgroundColor: '#0A2E5C', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 24, marginBottom: 40 },
   submitButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    requestBanner: {
+    backgroundColor: '#fff4e0',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+  },
+  requestBannerTitle: { color: '#a15c00', fontWeight: '700' },
+  requestBannerMessage: { color: '#a15c00', marginTop: 4, fontStyle: 'italic' },
 });

@@ -9,6 +9,8 @@ import ValidatedReportsScreen from './validated_reports';
 import InspectionFormScreen from './inspection_form';
 import WorkOrdersScreen from './work-orders';
 import WorkOrderDetailScreen from './work-order-detail';
+import NotificationsScreen from '../shared/notifications';
+import { useUnreadCount } from '../../services/notifications';
 
 type Props = {
   firstName: string;
@@ -18,6 +20,7 @@ type Props = {
 
 const Tab = createBottomTabNavigator();
 const InspectStack = createNativeStackNavigator();
+const WorkOrderStack = createNativeStackNavigator();
 
 function InspectStackScreen() {
   return (
@@ -31,8 +34,6 @@ function InspectStackScreen() {
     </InspectStack.Navigator>
   );
 }
-
-const WorkOrderStack = createNativeStackNavigator();
 
 function WorkOrderStackScreen() {
   return (
@@ -60,6 +61,8 @@ function ProfileTab({ firstName, lastName, onLogout }: Props) {
 }
 
 export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Props) {
+  const unreadCount = useUnreadCount();
+
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -69,6 +72,7 @@ export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Pro
             let iconName: keyof typeof Ionicons.glyphMap = 'clipboard';
             if (route.name === 'Inspections') iconName = 'clipboard';
             if (route.name === 'WorkOrders') iconName = 'construct';
+            if (route.name === 'Notifications') iconName = 'notifications';
             if (route.name === 'Profile') iconName = 'person';
             return <Ionicons name={iconName} size={size} color={color} />;
           },
@@ -76,6 +80,22 @@ export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Pro
       >
         <Tab.Screen name="Inspections" component={InspectStackScreen} />
         <Tab.Screen name="WorkOrders" component={WorkOrderStackScreen} options={{ title: 'Work Orders' }} />
+        <Tab.Screen
+          name="Notifications"
+          options={{ tabBarBadge: unreadCount > 0 ? unreadCount : undefined }}
+        >
+          {({ navigation }) => (
+            <NotificationsScreen
+              onOpenNotification={(notification) => {
+                if (notification.kind === 'report_validated') {
+                  navigation.navigate('Inspections');
+                } else {
+                  navigation.navigate('WorkOrders');
+                }
+              }}
+            />
+          )}
+        </Tab.Screen>
         <Tab.Screen name="Profile">
           {() => <ProfileTab firstName={firstName} lastName={lastName} onLogout={onLogout} />}
         </Tab.Screen>
