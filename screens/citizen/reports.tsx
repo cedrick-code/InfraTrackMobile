@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator,
+  View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator, TouchableOpacity,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,7 +17,7 @@ type Report = {
   reported_date: string;
 };
 
-export default function ReportsScreen() {
+export default function ReportsScreen({ navigation }: any) {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,7 +25,7 @@ export default function ReportsScreen() {
   const fetchReports = async () => {
     try {
       const token = await AsyncStorage.getItem('auth_token');
-      const response = await fetch(`${API_URL}/api/reports/list/`, {
+      const response = await fetch(`${API_URL}/api/reports/my-reports/`, {
         headers: { 'Authorization': `Token ${token}` },
       });
       if (response.ok) {
@@ -67,14 +67,17 @@ export default function ReportsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>All Reports</Text>
+        <Text style={styles.title}>My Reports</Text>
       <FlatList
         data={reports}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{ padding: 16 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('ReportDetail', { reportId: item.id })}
+          >
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>{item.title}</Text>
               <View style={[styles.badge, { backgroundColor: severityColor(item.severity_level) }]}>
@@ -86,10 +89,10 @@ export default function ReportsScreen() {
             {item.geographic_address ? (
               <Text style={styles.cardAddress}>📍 {item.geographic_address}</Text>
             ) : null}
-          </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No reports yet.</Text>
+          <Text style={styles.empty}>You haven't submitted any reports yet.</Text>
         }
       />
     </View>

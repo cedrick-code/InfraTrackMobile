@@ -16,6 +16,7 @@ import PersonalInformationScreen from './personal-information';
 import MapScreen from './map';
 import ReportsScreen from './reports';
 import ReportIssueScreen from './report-issue';
+import ReportDetailScreen from './report-detail';
 
 type Props = {
   firstName: string;
@@ -26,6 +27,7 @@ type Props = {
 const Tab = createBottomTabNavigator();
 const ProfileStack = createNativeStackNavigator();
 const HomeStack = createNativeStackNavigator();
+const ReportsStack = createNativeStackNavigator();
 
 function ProfileStackScreen({
   firstName,
@@ -71,6 +73,15 @@ function HomeStackScreen({ firstName }: { firstName: string }) {
           <HomeScreen
             firstName={firstName}
             onReportIssue={() => navigation.navigate('ReportIssue')}
+            onViewReport={(reportId: number) =>
+              navigation.navigate('Reports', {
+                screen: 'ReportDetail',
+                params: { reportId },
+              })
+            }
+            onViewAllReports={() =>
+              navigation.navigate('Reports', { screen: 'ReportsList' })
+            }
           />
         )}
       </HomeStack.Screen>
@@ -84,6 +95,26 @@ function HomeStackScreen({ firstName }: { firstName: string }) {
         }}
       />
     </HomeStack.Navigator>
+  );
+}
+
+function ReportsStackScreen() {
+  return (
+    <ReportsStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <ReportsStack.Screen name="ReportsList" component={ReportsScreen} />
+      <ReportsStack.Screen
+        name="ReportDetail"
+        component={ReportDetailScreen}
+        options={{
+          headerShown: true,
+          title: 'Report Details',
+        }}
+      />
+    </ReportsStack.Navigator>
   );
 }
 
@@ -139,7 +170,7 @@ export default function CitizenTabs({
         {/* REPORTS TAB */}
         <Tab.Screen
           name="Reports"
-          component={ReportsScreen}
+          component={ReportsStackScreen}
           options={{
             title: 'Reports',
             tabBarLabel: 'Reports',

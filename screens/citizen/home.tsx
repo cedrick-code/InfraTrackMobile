@@ -1,32 +1,93 @@
+import { useState, useCallback } from 'react';
 import {
+  ActivityIndicator,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../../services/api';
 
 type Props = {
   onReportIssue: () => void;
+  onViewReport: (reportId: number) => void;
+  onViewAllReports: () => void;
   firstName: string;
 };
 
-export default function HomeScreen({ onReportIssue, firstName,}: Props) {
+type Report = {
+  id: number;
+  title: string;
+  infrastructure_type: string;
+  severity_level: string;
+  status: string;
+  reported_date: string;
+};
+
+export default function HomeScreen({
+  onReportIssue,
+  onViewReport,
+  onViewAllReports,
+  firstName,
+}: Props) {
+  const [recentReports, setRecentReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRecentReports = async () => {
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const response = await fetch(`${API_URL}/api/reports/my-reports/`, {
+        headers: { 'Authorization': `Token ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRecentReports(data.slice(0, 3));
+      }
+    } catch (err) {
+      console.log('Fetch recent reports error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRecentReports();
+    }, [])
+  );
+
+  const statusColor = (status: string) => {
+    if (status === 'Resolved') return '#388e3c';
+    if (status === 'Rejected') return '#d32f2f';
+    if (status === 'In Progress' || status === 'Work Order Issued') return '#f9a825';
+    return '#008080';
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
 
       {/* Header */}
       <View style={styles.header}>
         <View>
-            <Text style={styles.greeting}>
-                Hello, {firstName}! 👋
-            </Text>
+          <Text style={styles.greeting}>
+            Hello, {firstName}! 👋
+          </Text>
           <Text style={styles.subtitle}>
             Help improve your community
           </Text>
         </View>
 
         <View style={styles.profileCircle}>
-          <Text style={styles.profileText}>C</Text>
+          <Text style={styles.profileText}>
+            {firstName.charAt(0).toUpperCase()}
+          </Text>
         </View>
       </View>
 
@@ -56,7 +117,7 @@ export default function HomeScreen({ onReportIssue, firstName,}: Props) {
 
       <View style={styles.quickContainer}>
 
-        <TouchableOpacity style={styles.quickCard}>
+        <TouchableOpacity style={styles.quickCard} onPress={onViewAllReports}>
           <Text style={styles.quickIcon}>📋</Text>
           <Text style={styles.quickTitle}>My Reports</Text>
           <Text style={styles.quickDescription}>
@@ -75,20 +136,51 @@ export default function HomeScreen({ onReportIssue, firstName,}: Props) {
       </View>
 
       {/* Recent Reports */}
-      <Text style={styles.sectionTitle}>Recent Reports</Text>
-
-      <View style={styles.emptyCard}>
-        <Text style={styles.emptyTitle}>
-          No reports yet
-        </Text>
-
-        <Text style={styles.emptyText}>
-          Your submitted infrastructure reports will
-          appear here.
-        </Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitleNoMargin}>Recent Reports</Text>
+        {recentReports.length > 0 && (
+          <TouchableOpacity onPress={onViewAllReports}>
+            <Text style={styles.seeAll}>See all</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-    </View>
+      {loading ? (
+        <ActivityIndicator color="#008080" style={{ marginVertical: 20 }} />
+      ) : recentReports.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>
+            No reports yet
+          </Text>
+
+          <Text style={styles.emptyText}>
+            Your submitted infrastructure reports will
+            appear here.
+          </Text>
+        </View>
+      ) : (
+        recentReports.map((report) => (
+          <TouchableOpacity
+            key={report.id}
+            style={styles.reportItem}
+            onPress={() => onViewReport(report.id)}
+          >
+            <View style={styles.reportItemHeader}>
+              <Text style={styles.reportItemTitle} numberOfLines={1}>
+                {report.title}
+              </Text>
+              <View style={[styles.statusBadge, { backgroundColor: statusColor(report.status) }]}>
+                <Text style={styles.statusBadgeText}>{report.status}</Text>
+              </View>
+            </View>
+            <Text style={styles.reportItemMeta}>
+              {report.infrastructure_type} • {new Date(report.reported_date).toLocaleDateString()}
+            </Text>
+          </TouchableOpacity>
+        ))
+      )}
+
+    </ScrollView>
   );
 }
 
@@ -96,8 +188,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F7F9F9',
+  },
+
+  content: {
     paddingHorizontal: 20,
     paddingTop: 55,
+    paddingBottom: 30,
   },
 
   header: {
@@ -176,6 +272,25 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+
+  sectionTitleNoMargin: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#222222',
+  },
+
+  seeAll: {
+    fontSize: 14,
+    color: '#008080',
+    fontWeight: '600',
+  },
+
   quickContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -228,5 +343,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#888888',
     lineHeight: 19,
+  },
+
+  reportItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    marginBottom: 10,
+  },
+
+  reportItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  reportItemTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#333333',
+    flex: 1,
+    marginRight: 8,
+  },
+
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+
+  statusBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+
+  reportItemMeta: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#888888',
   },
 });
