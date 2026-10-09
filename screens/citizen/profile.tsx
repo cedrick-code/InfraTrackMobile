@@ -11,6 +11,8 @@ type Props = {
   lastName: string;
   onLogout: () => void;
   onPersonalInformation: () => void;
+  onNotifications: () => void;
+  onSettings: () => void;
 };
 
 export default function ProfileScreen({
@@ -18,6 +20,8 @@ export default function ProfileScreen({
   lastName,
   onLogout,
   onPersonalInformation,
+  onNotifications,
+  onSettings,
 }: Props) {
 
   const handleLogout = () => {
@@ -90,7 +94,7 @@ export default function ProfileScreen({
         </TouchableOpacity>
 
 
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity style={styles.option} onPress={onNotifications}>
           <Text style={styles.optionIcon}>
             🔔
           </Text>
@@ -105,7 +109,7 @@ export default function ProfileScreen({
         </TouchableOpacity>
 
 
-        <TouchableOpacity style={styles.option}>
+        <TouchableOpacity style={styles.option} onPress={onSettings}>
           <Text style={styles.optionIcon}>
             ⚙️
           </Text>

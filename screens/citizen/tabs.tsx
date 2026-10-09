@@ -18,6 +18,7 @@ import ReportsScreen from './reports';
 import ReportIssueScreen from './report-issue';
 import ReportDetailScreen from './report-detail';
 import NotificationsScreen from '../shared/notifications';
+import SettingsScreen from './settings';
 
 type Props = {
   firstName: string;
@@ -50,6 +51,8 @@ function ProfileStackScreen({
             onPersonalInformation={() =>
               navigation.navigate('PersonalInformation')
             }
+            onNotifications={() => navigation.navigate('ProfileNotifications')}
+            onSettings={() => navigation.navigate('Settings')}
           />
         )}
       </ProfileStack.Screen>
@@ -57,6 +60,37 @@ function ProfileStackScreen({
       <ProfileStack.Screen
         name="PersonalInformation"
         component={PersonalInformationScreen}
+      />
+
+      <ProfileStack.Screen
+        name="ProfileNotifications"
+        options={{
+          headerShown: true,
+          title: 'Notifications',
+        }}
+      >
+        {({ navigation }) => (
+          <NotificationsScreen
+            showTitle={false}
+            onOpenNotification={(notification) => {
+              if (notification.report) {
+                navigation.navigate('Reports', {
+                  screen: 'ReportDetail',
+                  params: { reportId: notification.report },
+                });
+              }
+            }}
+          />
+        )}
+      </ProfileStack.Screen>
+
+      <ProfileStack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          headerShown: true,
+          title: 'Settings',
+        }}
       />
     </ProfileStack.Navigator>
   );
