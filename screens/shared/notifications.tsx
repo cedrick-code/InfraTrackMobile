@@ -25,6 +25,7 @@ const ICONS: Record<string, string> = {
   repair_update: '🔧',
   repair_progress: '🔧',
   report_resolved: '🎉',
+  follow_up_reply: '💬',
 };
 
 const timeAgo = (iso: string) => {

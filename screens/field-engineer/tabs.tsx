@@ -7,6 +7,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 import ValidatedReportsScreen from './validated_reports';
 import InspectionFormScreen from './inspection_form';
+import MyInspectionsScreen from './my_inspections';
 import WorkOrdersScreen from './work-orders';
 import WorkOrderDetailScreen from './work-order-detail';
 import NotificationsScreen from '../shared/notifications';
@@ -71,6 +72,7 @@ export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Pro
           tabBarIcon: ({ color, size }) => {
             let iconName: keyof typeof Ionicons.glyphMap = 'clipboard';
             if (route.name === 'Inspections') iconName = 'clipboard';
+            if (route.name === 'MyInspections') iconName = 'checkmark-done';
             if (route.name === 'WorkOrders') iconName = 'construct';
             if (route.name === 'Notifications') iconName = 'notifications';
             if (route.name === 'Profile') iconName = 'person';
@@ -79,6 +81,11 @@ export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Pro
         })}
       >
         <Tab.Screen name="Inspections" component={InspectStackScreen} />
+        <Tab.Screen
+          name="MyInspections"
+          component={MyInspectionsScreen}
+          options={{ title: 'My Inspections', headerShown: true }}
+        />
         <Tab.Screen name="WorkOrders" component={WorkOrderStackScreen} options={{ title: 'Work Orders' }} />
         <Tab.Screen
           name="Notifications"

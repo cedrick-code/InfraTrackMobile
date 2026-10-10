@@ -15,6 +15,9 @@ export default function InspectionFormScreen({ route, navigation }: any) {
   const [recommendedAction, setRecommendedAction] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [validationResult, setValidationResult] = useState<'Confirmed' | 'Not Confirmed'>('Confirmed');
+  const [severity, setSeverity] = useState<string>(report.severity_level || 'Medium');
+  const [comments, setComments] = useState('');
 
   const pickPhotos = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -33,8 +36,12 @@ export default function InspectionFormScreen({ route, navigation }: any) {
   };
 
   const handleSubmit = async () => {
-    if (!remarks || !recommendedAction) {
-      Alert.alert('Missing info', 'Please fill in inspection remarks and recommended action.');
+    if (!remarks.trim()) {
+      Alert.alert('Missing info', 'Please describe your findings.');
+      return;
+    }
+    if (validationResult === 'Confirmed' && !recommendedAction.trim()) {
+      Alert.alert('Missing info', 'Please add a recommended action.');
       return;
     }
 
@@ -44,6 +51,9 @@ export default function InspectionFormScreen({ route, navigation }: any) {
       const formData = new FormData();
       formData.append('inspection_remarks', remarks);
       formData.append('recommended_action', recommendedAction);
+      formData.append('validation_result', validationResult);
+      formData.append('severity_rating', severity);
+      formData.append('comments', comments);
 
       for (let i = 0; i < photos.length; i++) {
         const res = await fetch(photos[i]);
@@ -109,6 +119,36 @@ export default function InspectionFormScreen({ route, navigation }: any) {
         <Text style={styles.directionsButtonText}>Get Directions</Text>
       </TouchableOpacity>
 
+            <Text style={styles.label}>Validation Result</Text>
+      <View style={styles.toggleRow}>
+        {(['Confirmed', 'Not Confirmed'] as const).map((value) => (
+          <TouchableOpacity
+            key={value}
+            style={[styles.toggleButton, validationResult === value && styles.toggleButtonActive]}
+            onPress={() => setValidationResult(value)}
+          >
+            <Text style={[styles.toggleText, validationResult === value && styles.toggleTextActive]}>
+              {value}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <Text style={styles.label}>Severity Rating (your assessment)</Text>
+      <View style={styles.toggleRow}>
+        {['Low', 'Medium', 'High'].map((level) => (
+          <TouchableOpacity
+            key={level}
+            style={[styles.toggleButton, severity === level && styles.toggleButtonActive]}
+            onPress={() => setSeverity(level)}
+          >
+            <Text style={[styles.toggleText, severity === level && styles.toggleTextActive]}>
+              {level}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <Text style={styles.label}>Inspection Remarks</Text>
       <TextInput
         style={[styles.input, { height: 100 }]}
@@ -125,6 +165,15 @@ export default function InspectionFormScreen({ route, navigation }: any) {
         onChangeText={setRecommendedAction}
         multiline
         placeholder="What repair action do you recommend?"
+      />
+
+      <Text style={styles.label}>Additional Comments (optional)</Text>
+      <TextInput
+        style={[styles.input, { height: 80 }]}
+        value={comments}
+        onChangeText={setComments}
+        multiline
+        placeholder="Anything else DPWH should know?"
       />
 
       <Text style={styles.label}>Inspection Photos</Text>
@@ -163,4 +212,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginTop: 10,
   },
   directionsButtonText: { color: '#fff', fontWeight: '600' },
+    toggleRow: { flexDirection: 'row', gap: 8 },
+  toggleButton: {
+    flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 8,
+    paddingVertical: 10, alignItems: 'center', backgroundColor: '#fff',
+  },
+  toggleButtonActive: { backgroundColor: '#00695c', borderColor: '#00695c' },
+  toggleText: { color: '#444', fontWeight: '600' },
+  toggleTextActive: { color: '#fff' },
 });

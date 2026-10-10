@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../../services/api';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ReportDetailScreen({ route }: any) {
   const { reportId } = route.params;
@@ -15,6 +16,11 @@ export default function ReportDetailScreen({ route }: any) {
   const [responseText, setResponseText] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [followUpText, setFollowUpText] = useState('');
+  const [sendingFollowUp, setSendingFollowUp] = useState(false);
 
   const fetchReport = async () => {
     try {
@@ -91,6 +97,80 @@ export default function ReportDetailScreen({ route }: any) {
     }
   };
 
+    const handleSubmitFeedback = async () => {
+    if (rating < 1) {
+      Alert.alert('Rating needed', 'Please tap a star to rate the repair.');
+      return;
+    }
+
+    setSendingFeedback(true);
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const response = await fetch(`${API_URL}/api/reports/feedback/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          report: report.id,
+          rating,
+          comment: feedbackComment.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Thank you!', 'Your feedback was submitted.');
+        setRating(0);
+        setFeedbackComment('');
+        fetchReport();
+      } else {
+        const errText = await response.text();
+        Alert.alert('Submission failed', errText);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', `Something went wrong: ${err?.message || String(err)}`);
+    } finally {
+      setSendingFeedback(false);
+    }
+  };
+
+    const handleSubmitFollowUp = async () => {
+    if (!followUpText.trim()) {
+      Alert.alert('Message needed', 'Please write your question first.');
+      return;
+    }
+
+    setSendingFollowUp(true);
+    try {
+      const token = await AsyncStorage.getItem('auth_token');
+      const response = await fetch(`${API_URL}/api/reports/follow-ups/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          report: report.id,
+          message: followUpText.trim(),
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Sent', 'Your question was sent to DPWH.');
+        setFollowUpText('');
+        fetchReport();
+      } else {
+        const errText = await response.text();
+        Alert.alert('Could not send', errText);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', `Something went wrong: ${err?.message || String(err)}`);
+    } finally {
+      setSendingFollowUp(false);
+    }
+  };
+
   if (loading || !report) {
     return <View style={styles.centered}><ActivityIndicator size="large" color="#00695c" /></View>;
   }
@@ -104,6 +184,7 @@ export default function ReportDetailScreen({ route }: any) {
   const pendingRequest = report.info_requests?.find((r: any) => !r.response_date);
   const requestMessage = pendingRequest?.request_message || report.screening_remarks;
   const isResubmitted = report.info_requests && report.info_requests.length > 0;
+  const hasPendingFollowUp = report.follow_ups?.some((f: any) => f.status === 'Pending');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 16 }}>
@@ -260,6 +341,123 @@ export default function ReportDetailScreen({ route }: any) {
         </View>
       )}
 
+            {report.status === 'Resolved' && (
+        <View style={styles.feedbackBox}>
+          {report.feedback ? (
+            <>
+              <Text style={styles.feedbackTitle}>Your Feedback</Text>
+              <View style={styles.starRow}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Ionicons
+                    key={n}
+                    name={n <= report.feedback.rating ? 'star' : 'star-outline'}
+                    size={28}
+                    color="#f9a825"
+                  />
+                ))}
+              </View>
+              {report.feedback.comment ? (
+                <Text style={styles.feedbackComment}>"{report.feedback.comment}"</Text>
+              ) : null}
+              <Text style={styles.stepDate}>
+                {new Date(report.feedback.date_created).toLocaleString()}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.feedbackTitle}>How was the repair?</Text>
+              <Text style={styles.feedbackHint}>
+                Rate the work done on your report.
+              </Text>
+              <View style={styles.starRow}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <TouchableOpacity key={n} onPress={() => setRating(n)}>
+                    <Ionicons
+                      name={n <= rating ? 'star' : 'star-outline'}
+                      size={36}
+                      color="#f9a825"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <TextInput
+                style={styles.input}
+                value={feedbackComment}
+                onChangeText={setFeedbackComment}
+                multiline
+                placeholder="Leave a comment (optional)"
+              />
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmitFeedback}
+                disabled={sendingFeedback}
+              >
+                {sendingFeedback
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={styles.submitButtonText}>Submit Feedback</Text>}
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      )}
+
+            {report.status !== 'Rejected' && (
+        <View style={styles.followUpBox}>
+          <Text style={styles.followUpTitle}>Questions & Updates</Text>
+
+          {report.follow_ups && report.follow_ups.length > 0 ? (
+            report.follow_ups.map((f: any) => (
+              <View key={f.id} style={styles.followUpItem}>
+                <Text style={styles.followUpLabel}>You asked</Text>
+                <Text style={styles.followUpMessage}>{f.message}</Text>
+                <Text style={styles.stepDate}>
+                  {new Date(f.submitted_date).toLocaleString()}
+                </Text>
+
+                {f.status === 'Answered' ? (
+                  <View style={styles.followUpReply}>
+                    <Text style={styles.followUpReplyLabel}>
+                      DPWH replied{f.responded_by_name ? ` (${f.responded_by_name})` : ''}
+                    </Text>
+                    <Text style={styles.followUpMessage}>{f.response}</Text>
+                    <Text style={styles.stepDate}>
+                      {new Date(f.responded_date).toLocaleString()}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={styles.followUpWaiting}>Waiting for a reply...</Text>
+                )}
+              </View>
+            ))
+          ) : (
+            <Text style={styles.followUpHint}>
+              Want to know how your report is going? Send DPWH a question.
+            </Text>
+          )}
+
+          {!hasPendingFollowUp && (
+            <>
+              <TextInput
+                style={styles.input}
+                value={followUpText}
+                onChangeText={setFollowUpText}
+                multiline
+                placeholder="Ask for an update on this report"
+              />
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmitFollowUp}
+                disabled={sendingFollowUp}
+              >
+                {sendingFollowUp
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={styles.submitButtonText}>Send Question</Text>}
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      )}
+
       {report.status === 'Rejected' && (
         <View style={styles.rejectedBanner}>
           <Text style={styles.rejectedText}>This report was rejected during screening.</Text>
@@ -302,4 +500,18 @@ const styles = StyleSheet.create({
   resolvedText: { color: '#1e7e34', fontWeight: '700' },
   rejectedBanner: { backgroundColor: '#fdeaea', padding: 14, borderRadius: 8, marginTop: 20, alignItems: 'center' },
   rejectedText: { color: '#c0392b', fontWeight: '700' },
+  feedbackBox: { backgroundColor: '#fffbea', borderRadius: 10, padding: 14, marginTop: 16 },
+  feedbackTitle: { fontWeight: '700', fontSize: 16, color: '#7a5c00' },
+  feedbackHint: { color: '#8a6d1a', marginTop: 4 },
+  starRow: { flexDirection: 'row', gap: 8, marginVertical: 12 },
+  feedbackComment: { color: '#333', fontStyle: 'italic' },
+  followUpBox: { backgroundColor: '#f1f6fd', borderRadius: 10, padding: 14, marginTop: 16 },
+  followUpTitle: { fontWeight: '700', fontSize: 16, color: '#0A2E5C', marginBottom: 8 },
+  followUpHint: { color: '#555', marginBottom: 6 },
+  followUpItem: { backgroundColor: '#ffffff', borderRadius: 8, padding: 12, marginBottom: 10 },
+  followUpLabel: { fontWeight: '600', color: '#0A2E5C', fontSize: 12 },
+  followUpMessage: { marginTop: 4, color: '#333' },
+  followUpReply: { backgroundColor: '#e6f7ec', borderRadius: 6, padding: 10, marginTop: 10 },
+  followUpReplyLabel: { fontWeight: '600', color: '#1e7e34', fontSize: 12 },
+  followUpWaiting: { marginTop: 10, color: '#a15c00', fontStyle: 'italic' },
 });
