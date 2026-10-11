@@ -149,17 +149,17 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 16,
+    paddingTop: 55,
     backgroundColor: '#F8F9FA',
   },
 
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: 'bold',
     marginBottom: 25,
   },
-
+  
   profileCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,

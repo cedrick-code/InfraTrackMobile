@@ -84,7 +84,7 @@ export default function FieldEngineerTabs({ firstName, lastName, onLogout }: Pro
         <Tab.Screen
           name="MyInspections"
           component={MyInspectionsScreen}
-          options={{ title: 'My Inspections', headerShown: true }}
+          options={{ title: 'My Inspections' }}
         />
         <Tab.Screen name="WorkOrders" component={WorkOrderStackScreen} options={{ title: 'Work Orders' }} />
         <Tab.Screen

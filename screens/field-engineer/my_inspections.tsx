@@ -43,96 +43,100 @@ export default function MyInspectionsScreen() {
   }
 
   return (
-    <FlatList
-      style={styles.container}
-      contentContainerStyle={{ padding: 16 }}
-      data={items}
-      keyExtractor={(item) => item.id.toString()}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => { setRefreshing(true); fetchItems(); }}
-        />
-      }
-      renderItem={({ item }) => {
-        const open = openId === item.id;
-        const confirmed = item.validation_result === 'Confirmed';
+    <View style={styles.container}>
+      <Text style={styles.pageTitle}>My Inspections</Text>
+      <FlatList
+        style={{ flex: 1 }}
+        contentContainerStyle={{ padding: 16 }}
+        data={items}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => { setRefreshing(true); fetchItems(); }}
+          />
+        }
+        renderItem={({ item }) => {
+          const open = openId === item.id;
+          const confirmed = item.validation_result === 'Confirmed';
 
-        return (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => setOpenId(open ? null : item.id)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.topRow}>
-              <Text style={styles.title} numberOfLines={open ? undefined : 1}>
-                {item.report_title}
-              </Text>
-              <View style={[styles.badge, { backgroundColor: confirmed ? '#388e3c' : '#757575' }]}>
-                <Text style={styles.badgeText}>{item.validation_result}</Text>
+          return (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => setOpenId(open ? null : item.id)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.topRow}>
+                <Text style={styles.title} numberOfLines={open ? undefined : 1}>
+                  {item.report_title}
+                </Text>
+                <View style={[styles.badge, { backgroundColor: confirmed ? '#388e3c' : '#757575' }]}>
+                  <Text style={styles.badgeText}>{item.validation_result}</Text>
+                </View>
               </View>
-            </View>
 
-            <View style={styles.metaRow}>
-              <View style={[styles.sevBadge, { backgroundColor: severityColor(item.severity_rating) }]}>
-                <Text style={styles.badgeText}>{item.severity_rating}</Text>
+              <View style={styles.metaRow}>
+                <View style={[styles.sevBadge, { backgroundColor: severityColor(item.severity_rating) }]}>
+                  <Text style={styles.badgeText}>{item.severity_rating}</Text>
+                </View>
+                <Text style={styles.date}>{new Date(item.inspection_date).toLocaleString()}</Text>
               </View>
-              <Text style={styles.date}>{new Date(item.inspection_date).toLocaleString()}</Text>
-            </View>
 
-            {open && (
-              <View style={styles.details}>
-                {item.report_address ? (
-                  <Text style={styles.address}>{item.report_address}</Text>
-                ) : null}
+              {open && (
+                <View style={styles.details}>
+                  {item.report_address ? (
+                    <Text style={styles.address}>{item.report_address}</Text>
+                  ) : null}
 
-                <Text style={styles.label}>Findings</Text>
-                <Text style={styles.value}>{item.findings}</Text>
+                  <Text style={styles.label}>Findings</Text>
+                  <Text style={styles.value}>{item.findings}</Text>
 
-                {item.recommended_repairs ? (
-                  <>
-                    <Text style={styles.label}>Recommended Action</Text>
-                    <Text style={styles.value}>{item.recommended_repairs}</Text>
-                  </>
-                ) : null}
+                  {item.recommended_repairs ? (
+                    <>
+                      <Text style={styles.label}>Recommended Action</Text>
+                      <Text style={styles.value}>{item.recommended_repairs}</Text>
+                    </>
+                  ) : null}
 
-                {item.comments ? (
-                  <>
-                    <Text style={styles.label}>Comments</Text>
-                    <Text style={styles.value}>{item.comments}</Text>
-                  </>
-                ) : null}
+                  {item.comments ? (
+                    <>
+                      <Text style={styles.label}>Comments</Text>
+                      <Text style={styles.value}>{item.comments}</Text>
+                    </>
+                  ) : null}
 
-                <Text style={styles.label}>Report status</Text>
-                <Text style={styles.value}>{item.report_status}</Text>
+                  <Text style={styles.label}>Report status</Text>
+                  <Text style={styles.value}>{item.report_status}</Text>
 
-                {item.photos && item.photos.length > 0 && (
-                  <View style={styles.photoRow}>
-                    {item.photos.map((uri: string, i: number) => (
-                      <Image key={i} source={{ uri }} style={styles.photo} />
-                    ))}
-                  </View>
-                )}
-              </View>
-            )}
+                  {item.photos && item.photos.length > 0 && (
+                    <View style={styles.photoRow}>
+                      {item.photos.map((uri: string, i: number) => (
+                        <Image key={i} source={{ uri }} style={styles.photo} />
+                      ))}
+                    </View>
+                  )}
+                </View>
+              )}
 
-            <Text style={styles.hint}>{open ? 'Tap to collapse' : 'Tap for details'}</Text>
-          </TouchableOpacity>
-        );
-      }}
-      ListEmptyComponent={
-        <Text style={styles.empty}>You haven't submitted any inspections yet.</Text>
-      }
-    />
+              <Text style={styles.hint}>{open ? 'Tap to collapse' : 'Tap for details'}</Text>
+            </TouchableOpacity>
+          );
+        }}
+        ListEmptyComponent={
+          <Text style={styles.empty}>You haven't submitted any inspections yet.</Text>
+        }
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  pageTitle: { fontSize: 22, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 55, paddingBottom: 8 },
   card: { backgroundColor: '#f0f7f4', borderLeftWidth: 4, borderLeftColor: '#00695c', borderRadius: 8, padding: 14, marginBottom: 12 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { fontSize: 16, fontWeight: '700', color: '#00695c', flex: 1, marginRight: 8 },
+  title: { fontSize: 16, fontWeight: '600', color: '#00695c', flex: 1, marginRight: 8 },
   badge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
   sevBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10, marginRight: 10 },
   badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },

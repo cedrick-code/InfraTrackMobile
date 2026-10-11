@@ -102,7 +102,7 @@ export default function ReportsScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 22, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 16},
+    title: { fontSize: 22, fontWeight: 'bold', paddingHorizontal: 16, paddingTop: 55, paddingBottom: 8 },
   card: {
     backgroundColor: '#f7f7f7', borderRadius: 10, padding: 14, marginBottom: 12,
   },

@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   reportTitle: { fontSize: 20, fontWeight: 'bold', flex: 1, marginRight: 8 },
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   badgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  label: { fontWeight: '600', marginTop: 16, marginBottom: 6, fontSize: 14 },
+  label: { fontWeight: '600', marginTop: 16, marginBottom: 6, fontSize: 14, paddingHorizontal: 16, paddingTop: 55, paddingBottom: 8 },
   detailsText: { color: '#333', marginTop: 8 },
   dateText: { color: '#888', fontSize: 12, marginTop: 8 },
   sectionTitle: { fontSize: 17, fontWeight: 'bold', marginTop: 24, marginBottom: 8, color: '#0A2E5C' },
