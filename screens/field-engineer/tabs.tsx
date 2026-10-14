@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 import ValidatedReportsScreen from './validated_reports';
 import InspectionFormScreen from './inspection_form';
@@ -50,11 +50,22 @@ function WorkOrderStackScreen() {
 }
 
 function ProfileTab({ firstName, lastName, onLogout }: Props) {
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Logout', style: 'destructive', onPress: onLogout },
+      ]
+    );
+  };
+
   return (
     <View style={styles.profileContainer}>
       <Text style={styles.name}>{firstName} {lastName}</Text>
       <Text style={styles.role}>Field Engineer</Text>
-      <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
     </View>
