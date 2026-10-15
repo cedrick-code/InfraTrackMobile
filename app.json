@@ -15,9 +15,19 @@
     },
 
     "android": {
+      "package": "com.eulrixss.infratrack",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBMLaTNyjqkpTu4DOY0IEdO8zIycNCImLE"
+        }
       },
       "predictiveBackGestureEnabled": false
     },
@@ -36,6 +46,12 @@
           "backgroundColor": "#ffffff"
         }
       ]
-    ]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": "99586153-1bcf-4169-84fc-197c31608e01"
+      }
+    }
   }
 }
